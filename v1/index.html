@@ -6,60 +6,27 @@
     <title>My Custom 2048 Game</title>
     <style>
         :root { --bg-color: #bbada0; --cell-color: rgba(238, 228, 218, 0.35); }
-        body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #faf8ef; font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif; touch-action: none;}
+        body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #faf8ef; font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif; touch-action: none; }
         .score-container { font-size: 25px; font-weight: bold; margin-bottom: 20px; color: #776e65; }
         #game-board { position: relative; width: 400px; height: 400px; background-color: var(--bg-color); border-radius: 6px; padding: 10px; box-sizing: border-box; }
         .grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 10px; width: 100%; height: 100%; }
         .cell { background-color: var(--cell-color); border-radius: 3px; }
         .tile {
-            position: absolute; width: 87.5px; height: 87.5px;
+            position: absolute; width: 87.5px; height: 100px; /* 위치 조정 */
             display: flex; justify-content: center; align-items: center;
             font-size: 35px; font-weight: bold; border-radius: 3px;
- 	 transition: transform 0.2s ease-in-out; 
-    	 background-size: cover; background-position: center;
+            transition: transform 0.2s ease-in-out;
+            background-size: cover; background-position: center;
         }
-.tile-new {
-    animation: pop 0.2s ease-out;
-}
-@keyframes pop {
+        /* 합쳐질 때 팝 효과 */
+        .tile-merged { animation: pop 0.2s ease-out; }
+        @keyframes pop {
             0% { transform: scale(0.8); }
             50% { transform: scale(1.2); }
             100% { transform: scale(1); }
         }
-        /* 숫자별 스타일 및 이미지 설정 구역 */
-        .tile-2 { background-image: url('./images//img_2.jpg'); 
-        background-color: #f2b179; /* 이미지가 안 뜰 때를 대비한 기본색 */
-        color: transparent; /* 숫자 글자를 숨기고 싶을 때 추가 */}
-        .tile-4 {background-image: url('./images//img_4.jpg'); 
-        background-color: #f59563;
-        color: transparent;}
-        .tile-8 { background-image: url('./images//img_8.jpg'); 
-        background-color: #f2b179; /* 이미지가 안 뜰 때를 대비한 기본색 */
-        color: transparent; /* 숫자 글자를 숨기고 싶을 때 추가 */}
-        .tile-16 {background-image: url('./images//img_16.jpg'); 
-        background-color: #f59563;
-        color: transparent;}
-       .tile-32 {background-image: url('./images//img_32.jpg'); 
-       background-color: #f67c5f;
-       color: transparent;}
-        .tile-64 { background-image: url('./images//img_64.jpg'); 
-        background-color: #f2b179; /* 이미지가 안 뜰 때를 대비한 기본색 */
-        color: transparent; /* 숫자 글자를 숨기고 싶을 때 추가 */}
-        .tile-128 {background-image: url('./images//img_128.jpg'); 
-        background-color: #f59563;
-        color: transparent;}
-       .tile-256 {background-image: url('./images//img_256.jpg'); 
-       background-color: #f67c5f;
-       color: transparent;}
-        .tile-512 { background-image: url('./images//img_512.jpg'); 
-        background-color: #f2b179; /* 이미지가 안 뜰 때를 대비한 기본색 */
-        color: transparent; /* 숫자 글자를 숨기고 싶을 때 추가 */}
-        .tile-1024 {background-image: url('./images//img_1024.jpg'); 
-        background-color: #f59563;
-        color: transparent;}
-       .tile-2048 {background-image: url('./images//img_2048.jpg'); 
-       background-color: #f67c5f;
-       color: transparent;}
+        /* 이미지 경로가 맞는지 확인하세요 */
+        [class*="tile-"] { color: transparent; } 
     </style>
 </head>
 <body>
@@ -73,6 +40,7 @@
         const boardSize = 4;
         let board = Array(boardSize).fill().map(() => Array(boardSize).fill(0));
         let score = 0;
+        let mergedTiles = [];
 
         function init() {
             const bg = document.getElementById('grid-bg');
@@ -88,12 +56,13 @@
                 row.forEach((num, c) => {
                     if (num !== 0) {
                         const tile = document.createElement('div');
-tile.className = `tile tile-${num} tile-new`; 
-                
-                tile.style.top = `${r * 97.5 + 10}px`;
-                tile.style.left = `${c * 97.5 + 10}px`;
-                tile.innerText = num;
-                container.appendChild(tile);
+                        tile.className = `tile tile-${num}`;
+                        if (mergedTiles.some(t => t.row === r && t.col === c)) tile.classList.add('tile-merged');
+                        
+                        tile.style.top = `${r * 97.5 + 10}px`;
+                        tile.style.left = `${c * 97.5 + 10}px`;
+                        tile.innerText = num;
+                        container.appendChild(tile);
                     }
                 });
             });
@@ -109,36 +78,30 @@ tile.className = `tile tile-${num} tile-new`;
             }
         }
 
-let mergedTiles = [];
-
-function slide(row) {
-    let arr = row.filter(val => val !== 0);
-    for (let i = 0; i < arr.length - 1; i++) {
-        if (arr[i] === arr[i + 1]) {
-            arr[i] *= 2; 
-            score += arr[i];
-            
-            // ★ 합쳐진 인덱스 i를 기록 (이 타일은 팝 효과를 낼 거예요!)
-            mergedTiles.push({ row: currentRowIndex, col: i }); 
-            
-            arr.splice(i + 1, 1);
+        function slide(row, rowIndex) {
+            let arr = row.filter(val => val !== 0);
+            for (let i = 0; i < arr.length - 1; i++) {
+                if (arr[i] === arr[i + 1]) {
+                    arr[i] *= 2; 
+                    score += arr[i];
+                    mergedTiles.push({ row: rowIndex, col: i });
+                    arr.splice(i + 1, 1);
+                }
+            }
+            while (arr.length < boardSize) arr.push(0);
+            return arr;
         }
-    }
-    while (arr.length < boardSize) arr.push(0);
-    return arr;
-}
 
-        function rotateBoard() { // 시계방향 90도 회전
-            let newBoard = board[0].map((val, index) => board.map(row => row[index]).reverse());
-            board = newBoard;
+        function rotateBoard() {
+            board = board[0].map((val, index) => board.map(row => row[index]).reverse());
         }
 
         function move(direction) {
             let oldBoard = JSON.stringify(board);
-            // 방향에 따라 보드 회전 -> 왼쪽 슬라이드 -> 다시 원상복구
+            mergedTiles = []; 
             let rotations = {"ArrowLeft": 0, "ArrowDown": 1, "ArrowRight": 2, "ArrowUp": 3}[direction];
             for(let i=0; i<rotations; i++) rotateBoard();
-            board = board.map(row => slide(row));
+            board = board.map((row, r) => slide(row, r));
             for(let i=0; i<(4-rotations)%4; i++) rotateBoard();
 
             if (oldBoard !== JSON.stringify(board)) {
@@ -151,27 +114,10 @@ function slide(row) {
             if(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) move(e.key);
         });
 
-// 2. 새로 추가할 모바일 터치 이벤트
         let startX, startY;
-        window.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-        });
-
-        window.addEventListener('touchend', (e) => {
+        window.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; });
+        window.addEventListener('touchend', e => {
             if (!startX || !startY) return;
-            let endX = e.changedTouches[0].clientX;
-            let endY = e.changedTouches[0].clientY;
-            let diffX = endX - startX;
-            let diffY = endY - startY;
-            if (Math.abs(diffX) > Math.abs(diffY)) {
-                if (Math.abs(diffX) > 30) move(diffX > 0 ? "ArrowRight" : "ArrowLeft");
-            } else {
-                if (Math.abs(diffY) > 30) move(diffY > 0 ? "ArrowDown" : "ArrowUp");
-            }
-            startX = null; startY = null;
-        });
-        init();
-    </script>
-</body>
-</html>
+            let diffX = e.changedTouches[0].clientX - startX;
+            let diffY = e.changedTouches[0].clientY - startY;
+            if (Math.abs(diffX) > Math.abs(diffY)) { if (Math.abs(diffX) > 30)
