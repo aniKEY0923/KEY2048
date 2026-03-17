@@ -323,13 +323,16 @@ bestEl.innerText=best
 
 if(moved){
 
-setTimeout(()=>{
+// ⭐ 핵심 수정: 자연스러운 spawn 타이밍
+requestAnimationFrame(()=>{
+requestAnimationFrame(()=>{
 
 spawn()
 
 if(isGameOver()) showGameOver()
 
-},160)
+})
+})
 
 }
 
