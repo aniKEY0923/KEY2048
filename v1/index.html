@@ -72,7 +72,7 @@ z-index:0;
 100%{transform:scale(1)}
 }
 
-#gameover{
+.overlay{
 position:absolute;
 top:0;
 left:0;
@@ -87,7 +87,7 @@ color:white;
 z-index:10;
 }
 
-#gameover-img{
+.overlay-img{
 width:180px;
 height:180px;
 background-size:cover;
@@ -96,7 +96,18 @@ border-radius:8px;
 margin-bottom:20px;
 }
 
-#gameover button{
+.overlay-title{
+margin-bottom:15px;
+font-size:22px;
+font-weight:bold;
+}
+
+.overlay-buttons{
+display:flex;
+gap:10px;
+}
+
+.overlay button{
 padding:12px 26px;
 font-size:18px;
 border:none;
@@ -110,7 +121,7 @@ cursor:pointer;
 <body>
 
 <div style="font-size:12px; color:#888; margin-bottom:6px;">
-v1.5.1 수정 : merge 스케일 애니메이션 체감 강화 (애니메이션 시간 소폭 증가 + 최대 스케일 확대, 로직 변경 없음)
+v1.6 수정 : 2048 달성 시 YOU WIN 오버레이 추가 (CONTINUE / REPLAY 지원, 디버그 확인용 Shift+W 포함)
 </div>
 
 <h2>
@@ -124,10 +135,21 @@ Best <span id="best">0</span>
 <div class="grid" id="bg"></div>
 <div id="tiles"></div>
 
-<div id="gameover">
-<div id="gameover-img"></div>
-<div style="margin-bottom:15px;">GAME OVER</div>
+<div id="winoverlay" class="overlay">
+<div id="win-img" class="overlay-img"></div>
+<div class="overlay-title">YOU WIN</div>
+<div class="overlay-buttons">
+<button onclick="continueGame()">CONTINUE</button>
 <button onclick="restart()">REPLAY</button>
+</div>
+</div>
+
+<div id="gameover" class="overlay">
+<div id="gameover-img" class="overlay-img"></div>
+<div class="overlay-title">GAME OVER</div>
+<div class="overlay-buttons">
+<button onclick="restart()">REPLAY</button>
+</div>
 </div>
 
 </div>
@@ -142,6 +164,7 @@ let score = 0
 let best = localStorage.getItem("bestScore") || 0
 let idCounter = 0
 let moving = false
+let wonShown = false
 
 let cellSize
 let gap = 10
@@ -158,41 +181,41 @@ const preloadedImages = []
 function preloadImages() {
     const values = [2,4,8,16,32,64,128,256,512,1024,2048]
     values.forEach(val=>{
-        const img=new Image()
-        img.src=`./images/img_${val}.jpg`
+        const img = new Image()
+        img.src = `./images/img_${val}.jpg`
         preloadedImages.push(img)
     })
 }
 
 function calculateLayout(){
-    const size=boardEl.clientWidth
-    cellSize=(size-gap*5)/4
+    const size = boardEl.clientWidth
+    cellSize = (size - gap * 5) / 4
 
     tiles.forEach(t=>{
-        t.el.style.width=cellSize+"px"
-        t.el.style.height=cellSize+"px"
+        t.el.style.width = cellSize + "px"
+        t.el.style.height = cellSize + "px"
         updateTile(t)
     })
 }
 
 function pos(r,c){
     return{
-        top:gap+(cellSize+gap)*r,
-        left:gap+(cellSize+gap)*c
+        top: gap + (cellSize + gap) * r,
+        left: gap + (cellSize + gap) * c
     }
 }
 
 function createTile(value,r,c){
-    const el=document.createElement("div")
+    const el = document.createElement("div")
 
-    el.className="tile"
-    el.style.width=cellSize+"px"
-    el.style.height=cellSize+"px"
-    el.style.backgroundImage=`url('./images/img_${value}.jpg')`
+    el.className = "tile"
+    el.style.width = cellSize + "px"
+    el.style.height = cellSize + "px"
+    el.style.backgroundImage = `url('./images/img_${value}.jpg')`
 
     tileLayer.appendChild(el)
 
-    const tile={
+    const tile = {
         id:idCounter++,
         value,
         r,
@@ -205,19 +228,19 @@ function createTile(value,r,c){
     tiles.push(tile)
     updateTile(tile)
 
-    el.style.transform="scale(0.85)"
+    el.style.transform = "scale(0.85)"
     requestAnimationFrame(()=>{
-        el.style.transform="scale(1)"
+        el.style.transform = "scale(1)"
     })
 }
 
 function updateTile(tile){
-    const p=pos(tile.r,tile.c)
+    const p = pos(tile.r,tile.c)
 
-    tile.el.style.top=p.top+"px"
-    tile.el.style.left=p.left+"px"
-    tile.el.style.backgroundImage=`url('./images/img_${tile.value}.jpg')`
-    tile.el.className="tile"
+    tile.el.style.top = p.top + "px"
+    tile.el.style.left = p.left + "px"
+    tile.el.style.backgroundImage = `url('./images/img_${tile.value}.jpg')`
+    tile.el.className = "tile"
 
     if(tile.isRemoving){
         tile.el.classList.add("tile-removing")
@@ -225,21 +248,21 @@ function updateTile(tile){
 
     if(tile.merged){
         tile.el.classList.add("tile-merge")
-        tile.merged=false
+        tile.merged = false
     }
 }
 
 function rebuildBoard(){
-    board=Array(SIZE).fill().map(()=>Array(SIZE).fill(null))
+    board = Array(SIZE).fill().map(()=>Array(SIZE).fill(null))
     tiles.forEach(t=>{
-        if(!t.isRemoving) board[t.r][t.c]=t
+        if(!t.isRemoving) board[t.r][t.c] = t
     })
 }
 
 function spawn(){
     rebuildBoard()
 
-    const empty=[]
+    const empty = []
 
     for(let r=0;r<SIZE;r++)
         for(let c=0;c<SIZE;c++)
@@ -247,64 +270,71 @@ function spawn(){
 
     if(!empty.length) return
 
-    const {r,c}=empty[Math.floor(Math.random()*empty.length)]
-    createTile(Math.random()<0.9?2:4,r,c)
+    const {r,c} = empty[Math.floor(Math.random()*empty.length)]
+    createTile(Math.random()<0.9 ? 2 : 4, r, c)
+}
+
+function has2048Tile(){
+    return tiles.some(t => !t.isRemoving && t.value >= 2048)
 }
 
 function move(dir){
 
 if(moving) return
-moving=true
+if(document.getElementById("winoverlay").style.display === "flex") return
+if(document.getElementById("gameover").style.display === "flex") return
+
+moving = true
 
 rebuildBoard()
-let moved=false
+let moved = false
 
-let order=[0,1,2,3]
-if(dir=="ArrowRight"||dir=="ArrowDown") order=[3,2,1,0]
+let order = [0,1,2,3]
+if(dir=="ArrowRight" || dir=="ArrowDown") order = [3,2,1,0]
 
 for(let r of order){
 for(let c of order){
 
-let tile=board[r][c]
+let tile = board[r][c]
 if(!tile) continue
 
-let nr=r
-let nc=c
+let nr = r
+let nc = c
 
 while(true){
 
-let tr=nr
-let tc=nc
+let tr = nr
+let tc = nc
 
 if(dir=="ArrowLeft") tc--
 if(dir=="ArrowRight") tc++
 if(dir=="ArrowUp") tr--
 if(dir=="ArrowDown") tr++
 
-if(tr<0||tr>=SIZE||tc<0||tc>=SIZE) break
+if(tr<0 || tr>=SIZE || tc<0 || tc>=SIZE) break
 
-let target=board[tr][tc]
+let target = board[tr][tc]
 
 if(!target){
 
-board[nr][nc]=null
-nr=tr
-nc=tc
-board[nr][nc]=tile
-moved=true
+board[nr][nc] = null
+nr = tr
+nc = tc
+board[nr][nc] = tile
+moved = true
 
-}else if(target.value==tile.value && !target.merged){
+}else if(target.value == tile.value && !target.merged){
 
-board[nr][nc]=null
+board[nr][nc] = null
 
-target.value*=2
-target.merged=true
-score+=target.value
+target.value *= 2
+target.merged = true
+score += target.value
 
-nr=tr
-nc=tc
-tile.isRemoving=true
-moved=true
+nr = tr
+nc = tc
+tile.isRemoving = true
+moved = true
 
 break
 
@@ -312,19 +342,19 @@ break
 
 }
 
-tile.r=nr
-tile.c=nc
+tile.r = nr
+tile.c = nc
 
 }
 }
 
 tiles.forEach(updateTile)
-scoreEl.innerText=score
+scoreEl.innerText = score
 
-if(score>best){
-best=score
-localStorage.setItem("bestScore",best)
-bestEl.innerText=best
+if(score > best){
+best = score
+localStorage.setItem("bestScore", best)
+bestEl.innerText = best
 }
 
 if(moved){
@@ -332,111 +362,134 @@ if(moved){
 setTimeout(()=>{
 
 tiles.filter(t=>t.isRemoving).forEach(t=>t.el.remove())
-tiles=tiles.filter(t=>!t.isRemoving)
+tiles = tiles.filter(t=>!t.isRemoving)
 
 requestAnimationFrame(()=>{
 requestAnimationFrame(()=>{
 spawn()
+
+if(!wonShown && has2048Tile()){
+showWin()
+wonShown = true
+}
+
 if(isGameOver()) showGameOver()
+
+moving = false
 })
 })
 
 },150)
 
+}else{
+moving = false
 }
-
-setTimeout(()=>{
-moving=false
-},160)
 
 }
 
 function isGameOver(){
-rebuildBoard()
+    rebuildBoard()
 
-for(let r=0;r<SIZE;r++)
-for(let c=0;c<SIZE;c++){
+    for(let r=0;r<SIZE;r++)
+    for(let c=0;c<SIZE;c++){
 
-if(!board[r][c]) return false
+        if(!board[r][c]) return false
 
-if(c<SIZE-1 && board[r][c].value==board[r][c+1].value) return false
-if(r<SIZE-1 && board[r][c].value==board[r+1][c].value) return false
+        if(c<SIZE-1 && board[r][c].value==board[r][c+1].value) return false
+        if(r<SIZE-1 && board[r][c].value==board[r+1][c].value) return false
 
-}
+    }
 
-return true
+    return true
 }
 
 function getMaxTile(){
-let max=0
-tiles.forEach(t=>{
-if(t.value>max) max=t.value
-})
-return max
+    let max = 0
+    tiles.forEach(t=>{
+        if(t.value > max) max = t.value
+    })
+    return max
+}
+
+function showWin(){
+    const overlay = document.getElementById("winoverlay")
+    const img = document.getElementById("win-img")
+    img.style.backgroundImage = `url('./images/img_2048.jpg')`
+    overlay.style.display = "flex"
+}
+
+function continueGame(){
+    document.getElementById("winoverlay").style.display = "none"
 }
 
 function showGameOver(){
-const overlay=document.getElementById("gameover")
-const img=document.getElementById("gameover-img")
-const max=getMaxTile()
+    const overlay = document.getElementById("gameover")
+    const img = document.getElementById("gameover-img")
+    const max = getMaxTile()
 
-img.style.backgroundImage=`url('./images/img_${max}.jpg')`
-overlay.style.display="flex"
+    img.style.backgroundImage = `url('./images/img_${max}.jpg')`
+    overlay.style.display = "flex"
 }
 
 function restart(){
-location.reload()
+    location.reload()
 }
 
 window.addEventListener("keydown",e=>{
-if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key)){
-e.preventDefault()
-move(e.key)
-}
+    if(e.shiftKey && e.key.toLowerCase() === "w"){
+        showWin()
+        wonShown = true
+        return
+    }
+
+    if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key)){
+        e.preventDefault()
+        move(e.key)
+    }
 })
 
-let startX=0
-let startY=0
+let startX = 0
+let startY = 0
 
 document.addEventListener("touchstart",e=>{
-startX=e.touches[0].clientX
-startY=e.touches[0].clientY
+    startX = e.touches[0].clientX
+    startY = e.touches[0].clientY
 },{passive:true})
 
 document.addEventListener("touchend",e=>{
 
-let dx=e.changedTouches[0].clientX-startX
-let dy=e.changedTouches[0].clientY-startY
+    let dx = e.changedTouches[0].clientX - startX
+    let dy = e.changedTouches[0].clientY - startY
 
-let ax=Math.abs(dx)
-let ay=Math.abs(dy)
+    let ax = Math.abs(dx)
+    let ay = Math.abs(dy)
 
-if(Math.max(ax,ay)<30) return
+    if(Math.max(ax,ay) < 30) return
 
-if(ax>ay){
-move(dx>0?"ArrowRight":"ArrowLeft")
-}else{
-move(dy>0?"ArrowDown":"ArrowUp")
-}
+    if(ax > ay){
+        move(dx > 0 ? "ArrowRight" : "ArrowLeft")
+    }else{
+        move(dy > 0 ? "ArrowDown" : "ArrowUp")
+    }
 
 },{passive:true})
 
 function init(){
 
-preloadImages()
-calculateLayout()
-window.addEventListener("resize",calculateLayout)
+    preloadImages()
+    calculateLayout()
+    window.addEventListener("resize",calculateLayout)
 
-board = Array(SIZE).fill().map(()=>Array(SIZE).fill(null))
+    board = Array(SIZE).fill().map(()=>Array(SIZE).fill(null))
 
-for(let i=0;i<16;i++){
-let d=document.createElement("div")
-d.className="cell"
-bg.appendChild(d)
-}
+    for(let i=0;i<16;i++){
+        let d = document.createElement("div")
+        d.className = "cell"
+        bg.appendChild(d)
+    }
 
-spawn()
-spawn()
+    spawn()
+    spawn()
 
 }
 
