@@ -7,9 +7,9 @@
 :root{
     --board-size:min(92vw,420px);
 
-    /* 톤다운 연보라 */
-    --bg1:#eee9f6;
-    --bg2:#e3dcf0;
+    /* 바탕색: 아주 살짝 더 맑게 */
+    --bg1:#f2eef9;
+    --bg2:#e8e2f3;
 
     --board:#c8c0df;
     --board-dark:#b5acd3;
@@ -41,7 +41,7 @@ html, body{
 }
 body{
     background:
-        radial-gradient(circle at top, #faf8ff 0%, var(--bg1) 35%, var(--bg2) 100%);
+        radial-gradient(circle at top, #fdfcff 0%, var(--bg1) 38%, var(--bg2) 100%);
     font-family:Arial, sans-serif;
     display:flex;
     flex-direction:column;
@@ -82,14 +82,14 @@ body{
     margin-bottom:14px;
     padding:10px 14px;
     border-radius:12px;
-    background:rgba(255,255,255,.48);
+    background:rgba(255,255,255,.58);
     backdrop-filter:blur(4px);
     box-shadow:
-        0 6px 16px rgba(70,60,120,.04),
-        inset 0 1px 0 rgba(255,255,255,.55);
+        0 6px 16px rgba(70,60,120,.03),
+        inset 0 1px 0 rgba(255,255,255,.65);
     font-size:13px;
     line-height:1.5;
-    color:#7f7997;
+    color:#807a95;
     text-align:center;
 }
 .top-panel{
@@ -150,12 +150,12 @@ body{
     aspect-ratio:1 / 1;
     box-sizing:border-box;
     background:
-        linear-gradient(180deg, #dcd5f0 0%, var(--board) 50%, var(--board-dark) 100%);
+        linear-gradient(180deg, #d3cbe8 0%, var(--board) 54%, var(--board-dark) 100%);
     padding:0;
     border-radius:20px;
     box-shadow:
         0 16px 30px rgba(70,60,120,.15),
-        inset 0 1px 0 rgba(255,255,255,.35),
+        inset 0 1px 0 rgba(255,255,255,.30),
         inset 0 -1px 0 rgba(74,60,112,.05);
     overflow:hidden;
 }
@@ -165,8 +165,8 @@ body{
     top:0;
     left:0;
     right:0;
-    height:28%;
-    background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0));
+    height:24%;
+    background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0));
     pointer-events:none;
     z-index:0;
 }
@@ -339,7 +339,7 @@ body{
 
 <div id="app">
     <div class="version-note">
-        v2.4.0 수정 : 설명문 배경 조정, 보드 상단 여백 +2px, 빈 칸 그레이톤 조정, 타일 숫자 배지 추가
+        v2.4.1 수정 : 바탕색/설명문 배경을 더 맑게 조정, 보드 상단 그라데이션 완화
     </div>
 
     <div class="title-banner"></div>
