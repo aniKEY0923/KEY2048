@@ -49,14 +49,20 @@ body{
     justify-content:center;
     min-height:100vh;
     padding:18px 0;
-    touch-action:none;
     color:var(--text);
+    overflow:hidden;
 }
 #app{
     width:var(--board-size);
     display:flex;
     flex-direction:column;
     align-items:stretch;
+
+    /* 모바일 확대/선택 방지 */
+    touch-action:manipulation;
+    -webkit-user-select:none;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
 }
 .version-note{
     font-size:12px;
@@ -145,7 +151,7 @@ body{
     text-shadow:0 2px 5px rgba(74, 60, 112, .14);
 }
 
-/* 추가: 점수 상승 연출 */
+/* 점수 상승 연출 */
 .score-gain{
     position:absolute;
     top:10px;
@@ -173,7 +179,7 @@ body{
     }
 }
 
-/* 추가: 최고기록 갱신 연출 */
+/* 최고기록 갱신 연출 */
 .best-burst{
     animation:bestPulse .7s ease;
 }
@@ -213,7 +219,7 @@ body{
     }
 }
 
-/* 추가: 상시 새 게임 버튼 */
+/* 상시 새 게임 버튼 */
 .controls{
     display:flex;
     justify-content:flex-end;
@@ -250,6 +256,12 @@ body{
         inset 0 1px 0 rgba(255,255,255,.30),
         inset 0 -1px 0 rgba(74,60,112,.05);
     overflow:hidden;
+
+    /* 모바일 확대/제스처 충돌 완화 */
+    touch-action:manipulation;
+    -webkit-user-select:none;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
 }
 #board::before{
     content:"";
@@ -449,7 +461,7 @@ body{
 
 <div id="app">
     <div class="version-note">
-        v2.5.0 수정 : 엔딩 정보 강화, 점수/최고기록 연출 추가, 상시 새 게임 버튼 추가
+        v2.5.1 수정 : 모바일 확대 방지 강화, 멀티터치 무시, 보드 영역 터치 처리로 정리
     </div>
 
     <div class="title-banner"></div>
@@ -502,12 +514,11 @@ body{
 
 <script>
 /*
-v2.5.0 수정점
-1) 엔딩 오버레이에 최고 타일 숫자 표시 추가
-2) 승리/패배 메시지를 더 부드럽고 기분 좋게 개선
-3) 점수 상승 시 +점수 플로팅 연출 추가
-4) 최고기록 갱신 시 NEW BEST 연출 추가
-5) 플레이 중에도 누를 수 있는 상시 새 게임 버튼 추가
+v2.5.1 수정점
+1) 모바일에서 더블탭/제스처로 화면 확대되는 문제 완화
+2) 터치 입력 대상을 document -> #board 로 변경
+3) 두 손가락 이상 멀티터치는 스와이프로 처리하지 않도록 수정
+4) Safari gesture 이벤트도 막아서 확대 충돌 최소화
 */
 
 const SIZE = 4;
@@ -526,6 +537,12 @@ let cellHeight = 0;
 let lastSpawn = null;
 let mergeCells = [];
 
+/* 모바일 터치 추적용 */
+let startX = 0;
+let startY = 0;
+let trackingTouch = false;
+
+const boardEl = document.getElementById("board");
 const tilesEl = document.getElementById("tiles");
 const animLayer = document.getElementById("anim-layer");
 const scoreEl = document.getElementById("score");
@@ -988,6 +1005,7 @@ function restart(){
     moving = false;
     lastSpawn = null;
     mergeCells = [];
+    trackingTouch = false;
 
     scoreEl.innerText = "0";
     bestEl.innerText = String(best);
@@ -1019,17 +1037,34 @@ window.addEventListener("keydown", e => {
     }
 });
 
-let startX = 0;
-let startY = 0;
+/* 모바일 입력: document가 아니라 board에만 연결 */
+boardEl.addEventListener("touchstart", e => {
+    if(e.touches.length !== 1){
+        trackingTouch = false;
+        e.preventDefault();
+        return;
+    }
 
-document.addEventListener("touchstart", e => {
+    trackingTouch = true;
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
-}, { passive:true });
+}, { passive:false });
 
-document.addEventListener("touchend", e => {
+boardEl.addEventListener("touchmove", e => {
+    if(e.touches.length > 1){
+        trackingTouch = false;
+        e.preventDefault();
+    }
+}, { passive:false });
+
+boardEl.addEventListener("touchend", e => {
+    if(!trackingTouch) return;
+    if(e.changedTouches.length !== 1) return;
+
     const dx = e.changedTouches[0].clientX - startX;
     const dy = e.changedTouches[0].clientY - startY;
+
+    trackingTouch = false;
 
     if(Math.max(Math.abs(dx), Math.abs(dy)) < 30) return;
 
@@ -1039,6 +1074,23 @@ document.addEventListener("touchend", e => {
         move(dy > 0 ? "ArrowDown" : "ArrowUp");
     }
 }, { passive:true });
+
+boardEl.addEventListener("touchcancel", () => {
+    trackingTouch = false;
+}, { passive:true });
+
+/* Safari 제스처 확대 방지 */
+document.addEventListener("gesturestart", e => {
+    e.preventDefault();
+}, { passive:false });
+
+document.addEventListener("gesturechange", e => {
+    e.preventDefault();
+}, { passive:false });
+
+document.addEventListener("gestureend", e => {
+    e.preventDefault();
+}, { passive:false });
 
 function init(){
     if(bg.children.length === 0){
