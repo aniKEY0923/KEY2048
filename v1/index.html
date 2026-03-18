@@ -7,7 +7,6 @@
 :root{
     --board-size:min(92vw,420px);
 
-    /* 바탕색: 아주 살짝 더 맑게 */
     --bg1:#f2eef9;
     --bg2:#e8e2f3;
 
@@ -25,7 +24,6 @@
 
     --gap:10px;
 
-    /* 보드 패딩: 상단만 2px 더 */
     --pad-x:10px;
     --pad-top:12px;
     --pad-bottom:10px;
@@ -57,8 +55,6 @@ body{
     display:flex;
     flex-direction:column;
     align-items:stretch;
-
-    /* 모바일 확대/선택 방지 */
     touch-action:manipulation;
     -webkit-user-select:none;
     user-select:none;
@@ -70,6 +66,25 @@ body{
     margin-bottom:8px;
     text-align:center;
 }
+
+/* preload 로딩 안내 */
+.loading-note{
+    display:none;
+    margin-bottom:10px;
+    padding:10px 12px;
+    border-radius:12px;
+    background:rgba(255,255,255,.62);
+    color:#7d7697;
+    font-size:13px;
+    text-align:center;
+    box-shadow:
+        0 6px 14px rgba(70,60,120,.04),
+        inset 0 1px 0 rgba(255,255,255,.7);
+}
+.loading-note.show{
+    display:block;
+}
+
 .title-banner{
     width:100%;
     height:84px;
@@ -150,8 +165,6 @@ body{
     z-index:1;
     text-shadow:0 2px 5px rgba(74, 60, 112, .14);
 }
-
-/* 점수 상승 연출 */
 .score-gain{
     position:absolute;
     top:10px;
@@ -178,8 +191,6 @@ body{
         transform:translateY(-18px) scale(1.04);
     }
 }
-
-/* 최고기록 갱신 연출 */
 .best-burst{
     animation:bestPulse .7s ease;
 }
@@ -218,8 +229,6 @@ body{
         transform:translateY(-10px) scale(1);
     }
 }
-
-/* 상시 새 게임 버튼 */
 .controls{
     display:flex;
     justify-content:flex-end;
@@ -241,7 +250,6 @@ body{
 .ghost-btn:active{
     transform:scale(.98);
 }
-
 #board{
     position:relative;
     width:100%;
@@ -256,8 +264,6 @@ body{
         inset 0 1px 0 rgba(255,255,255,.30),
         inset 0 -1px 0 rgba(74,60,112,.05);
     overflow:hidden;
-
-    /* 모바일 확대/제스처 충돌 완화 */
     touch-action:manipulation;
     -webkit-user-select:none;
     user-select:none;
@@ -461,8 +467,10 @@ body{
 
 <div id="app">
     <div class="version-note">
-        v2.5.1 수정 : 모바일 확대 방지 강화, 멀티터치 무시, 보드 영역 터치 처리로 정리
+        v2.5.3 수정 : 타일/타이틀 이미지 preload 추가로 첫 등장 로딩 지연 완화
     </div>
+
+    <div id="loading-note" class="loading-note">이미지 로딩 중...</div>
 
     <div class="title-banner"></div>
 
@@ -514,16 +522,31 @@ body{
 
 <script>
 /*
-v2.5.1 수정점
-1) 모바일에서 더블탭/제스처로 화면 확대되는 문제 완화
-2) 터치 입력 대상을 document -> #board 로 변경
-3) 두 손가락 이상 멀티터치는 스와이프로 처리하지 않도록 수정
-4) Safari gesture 이벤트도 막아서 확대 충돌 최소화
+v2.5.3 수정점
+1) 타이틀/타일/엔딩 이미지를 게임 시작 전에 preload
+2) 로딩 완료 후 init 실행
+3) 첫 등장 타일 이미지가 늦게 보이는 현상 완화
+4) 시작/재시작 시 첫 두 타일은 계속 2, 2 고정
 */
 
 const SIZE = 4;
 const GAP = 10;
 const MOVE_MS = 140;
+
+const PRELOAD_IMAGES = [
+    "./images/img_title.jpg",
+    "./images/img_2.jpg",
+    "./images/img_4.jpg",
+    "./images/img_8.jpg",
+    "./images/img_16.jpg",
+    "./images/img_32.jpg",
+    "./images/img_64.jpg",
+    "./images/img_128.jpg",
+    "./images/img_256.jpg",
+    "./images/img_512.jpg",
+    "./images/img_1024.jpg",
+    "./images/img_2048.jpg"
+];
 
 let board = [];
 let score = 0;
@@ -537,11 +560,11 @@ let cellHeight = 0;
 let lastSpawn = null;
 let mergeCells = [];
 
-/* 모바일 터치 추적용 */
 let startX = 0;
 let startY = 0;
 let trackingTouch = false;
 
+const loadingNoteEl = document.getElementById("loading-note");
 const boardEl = document.getElementById("board");
 const tilesEl = document.getElementById("tiles");
 const animLayer = document.getElementById("anim-layer");
@@ -559,6 +582,25 @@ const scoreCardEl = document.getElementById("score-card");
 const bestCardEl = document.getElementById("best-card");
 
 bestEl.innerText = String(best);
+
+function preloadImages(srcList){
+    loadingNoteEl.classList.add("show");
+
+    const tasks = srcList.map(src => {
+        return new Promise(resolve => {
+            const img = new Image();
+
+            img.onload = () => resolve({ src, ok: true });
+            img.onerror = () => resolve({ src, ok: false });
+
+            img.src = src;
+        });
+    });
+
+    return Promise.all(tasks).finally(() => {
+        loadingNoteEl.classList.remove("show");
+    });
+}
 
 function emptyBoard(){
     return Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
@@ -713,7 +755,7 @@ function getEmptyCells(){
     return empty;
 }
 
-function spawn(){
+function spawn(forceValue = null){
     const empty = getEmptyCells();
     if(empty.length === 0){
         lastSpawn = null;
@@ -721,7 +763,7 @@ function spawn(){
     }
 
     const pick = empty[Math.floor(Math.random() * empty.length)];
-    board[pick.r][pick.c] = Math.random() < 0.9 ? 2 : 4;
+    board[pick.r][pick.c] = forceValue ?? (Math.random() < 0.9 ? 2 : 4);
     lastSpawn = { r: pick.r, c: pick.c };
 }
 
@@ -1010,8 +1052,8 @@ function restart(){
     scoreEl.innerText = "0";
     bestEl.innerText = String(best);
 
-    spawn();
-    spawn();
+    spawn(2);
+    spawn(2);
     renderBoard();
 }
 
@@ -1037,7 +1079,6 @@ window.addEventListener("keydown", e => {
     }
 });
 
-/* 모바일 입력: document가 아니라 board에만 연결 */
 boardEl.addEventListener("touchstart", e => {
     if(e.touches.length !== 1){
         trackingTouch = false;
@@ -1079,7 +1120,6 @@ boardEl.addEventListener("touchcancel", () => {
     trackingTouch = false;
 }, { passive:true });
 
-/* Safari 제스처 확대 방지 */
 document.addEventListener("gesturestart", e => {
     e.preventDefault();
 }, { passive:false });
@@ -1103,8 +1143,9 @@ function init(){
 
     board = emptyBoard();
     updateScore();
-    spawn();
-    spawn();
+
+    spawn(2);
+    spawn(2);
 
     requestAnimationFrame(() => {
         calculateLayout();
@@ -1113,7 +1154,9 @@ function init(){
     window.addEventListener("resize", calculateLayout);
 }
 
-init();
+preloadImages(PRELOAD_IMAGES).then(() => {
+    init();
+});
 </script>
 </body>
 </html>
