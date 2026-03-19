@@ -385,6 +385,7 @@ body{
 }
 .tile{
     z-index:5;
+    overflow:hidden;
 }
 .anim-tile{
     transition:
@@ -395,12 +396,22 @@ body{
     z-index:20;
 }
 .tile-new{
-    transform:scale(0);
-    animation:popIn .14s ease forwards;
+    animation:tileSpawn .28s cubic-bezier(.22,1.35,.32,1) forwards;
+    will-change:transform, opacity, filter;
+    z-index:8;
 }
 .tile-merge{
     animation:merge .22s ease-out;
     will-change:transform;
+}
+.tile-spawn-ring{
+    position:absolute;
+    inset:-6px;
+    border-radius:calc(var(--tile-radius) + 6px);
+    border:2px solid rgba(255,255,255,.65);
+    opacity:0;
+    pointer-events:none;
+    animation:spawnRing .34s ease-out forwards;
 }
 .tile-num{
     position:absolute;
@@ -421,9 +432,36 @@ body{
     backdrop-filter:blur(2px);
     pointer-events:none;
 }
-@keyframes popIn{
-    from{ transform:scale(0); }
-    to{ transform:scale(1); }
+@keyframes tileSpawn{
+    0%{
+        opacity:0;
+        transform:scale(.35) translateY(10px);
+        filter:brightness(1.25) drop-shadow(0 0 0 rgba(255,255,255,0));
+    }
+    55%{
+        opacity:1;
+        transform:scale(1.12) translateY(-2px);
+        filter:brightness(1.1) drop-shadow(0 0 10px rgba(255,255,255,.35));
+    }
+    78%{
+        transform:scale(.96) translateY(0);
+        filter:brightness(1.02) drop-shadow(0 0 6px rgba(255,255,255,.18));
+    }
+    100%{
+        opacity:1;
+        transform:scale(1) translateY(0);
+        filter:brightness(1) drop-shadow(0 0 0 rgba(255,255,255,0));
+    }
+}
+@keyframes spawnRing{
+    0%{
+        opacity:.75;
+        transform:scale(.72);
+    }
+    100%{
+        opacity:0;
+        transform:scale(1.18);
+    }
 }
 @keyframes merge{
     0%{ transform:scale(1); }
@@ -604,7 +642,7 @@ body{
 
 <div id="app">
     <div class="version-note">
-        v2.5.7 수정 : 패배 엔딩 단순화 / 정사각형 이미지 / 디버그 모드 유지
+        v2.5.8 수정 : 새 타일 등장 연출 강화(팝 + 글로우 + 링)
     </div>
 
     <div id="loading-note" class="loading-note">이미지 로딩 중...</div>
@@ -679,11 +717,10 @@ body{
 
 <script>
 /*
-v2.5.7 수정점
-1) 패배 엔딩 제목 제거, 메시지 한 줄만 사용
-2) 패배 엔딩의 점수/최고타일 카드 제거
-3) 엔딩 이미지 contain 처리로 정사각형 형태 온전하게 표시
-4) 디버그 모드 유지
+v2.5.8 수정점
+1) 새 타일 등장 시 scale/brightness 강화
+2) 새 타일 주변 링 파동 추가
+3) 기존 패배 엔딩/디버그 모드 구조 유지
 */
 
 const SIZE = 4;
@@ -998,6 +1035,10 @@ function renderBoard(){
 
             if(lastSpawn && lastSpawn.r === r && lastSpawn.c === c){
                 tile.classList.add("tile-new");
+
+                const sparkle = document.createElement("div");
+                sparkle.className = "tile-spawn-ring";
+                tile.appendChild(sparkle);
             }
 
             if(mergeCells.some(m => m.r === r && m.c === c)){
