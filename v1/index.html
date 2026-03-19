@@ -30,9 +30,7 @@
 
     --tile-radius:8px;
 }
-*{
-    box-sizing:border-box;
-}
+*{ box-sizing:border-box; }
 html, body{
     margin:0;
     min-height:100%;
@@ -84,7 +82,6 @@ body{
     display:block;
 }
 
-/* 디버그 배지 */
 .debug-indicator{
     display:none;
     margin-bottom:8px;
@@ -104,7 +101,6 @@ body{
     display:block;
 }
 
-/* 달성 배너 */
 .milestone-wrap{
     position:absolute;
     top:36px;
@@ -392,50 +388,37 @@ body{
         top .14s ease,
         left .14s ease,
         opacity .14s ease,
-        transform .14s ease,
         filter .14s ease;
     z-index:20;
-    will-change:top, left, transform, opacity, filter;
+    will-change:top, left, opacity, filter;
 }
-.tile-new{
-    animation:tileSpawn .36s cubic-bezier(.18,1.45,.28,1) forwards;
-    will-change:transform, opacity, filter;
+.tile-merged{
+    animation:mergeResultPop .20s ease-out;
+    will-change:transform, filter;
     z-index:8;
 }
-.tile-merge{
-    animation:mergePunch .12s ease-out;
-    will-change:transform, filter;
-}
-.tile-spawn-ring{
+.tile-merge-ring{
     position:absolute;
     inset:-8px;
     border-radius:calc(var(--tile-radius) + 8px);
     border:3px solid rgba(255,255,255,.95);
     box-shadow:
-        0 0 0 2px rgba(255,255,255,.22),
-        0 0 16px rgba(255,255,255,.65),
-        0 0 26px rgba(255,255,255,.38);
+        0 0 0 2px rgba(255,255,255,.18),
+        0 0 14px rgba(255,255,255,.52),
+        0 0 26px rgba(255,255,255,.24);
     opacity:0;
     pointer-events:none;
-    animation:spawnRing .38s ease-out forwards;
+    animation:mergeRing .30s ease-out forwards;
 }
-.tile-spawn-ring.ring-2{
-    inset:-14px;
-    border:2px solid rgba(255,255,255,.55);
-    box-shadow:
-        0 0 12px rgba(255,255,255,.34),
-        0 0 24px rgba(255,255,255,.18);
-    animation:spawnRingOuter .44s ease-out forwards;
-}
-.tile-spawn-glow{
+.tile-merge-glow{
     position:absolute;
     inset:-10px;
     border-radius:calc(var(--tile-radius) + 10px);
     background:
-        radial-gradient(circle, rgba(255,255,255,.42) 0%, rgba(255,255,255,.18) 32%, rgba(255,255,255,0) 72%);
+        radial-gradient(circle, rgba(255,255,255,.38) 0%, rgba(255,255,255,.14) 36%, rgba(255,255,255,0) 72%);
     opacity:0;
     pointer-events:none;
-    animation:spawnGlow .34s ease-out forwards;
+    animation:mergeGlow .26s ease-out forwards;
     mix-blend-mode:screen;
 }
 .tile-num{
@@ -457,69 +440,38 @@ body{
     backdrop-filter:blur(2px);
     pointer-events:none;
 }
-@keyframes tileSpawn{
+@keyframes mergeResultPop{
     0%{
-        opacity:0;
-        transform:scale(.18);
-        filter:brightness(1.55) saturate(1.2) drop-shadow(0 0 0 rgba(255,255,255,0));
+        transform:scale(.90);
+        filter:brightness(1.18);
     }
-    38%{
-        opacity:1;
-        transform:scale(1.22);
-        filter:brightness(1.22) saturate(1.08) drop-shadow(0 0 18px rgba(255,255,255,.65));
-    }
-    68%{
-        transform:scale(.92);
-        filter:brightness(1.08) drop-shadow(0 0 10px rgba(255,255,255,.32));
+    55%{
+        transform:scale(1.08);
+        filter:brightness(1.10);
     }
     100%{
-        opacity:1;
         transform:scale(1);
-        filter:brightness(1) saturate(1) drop-shadow(0 0 0 rgba(255,255,255,0));
+        filter:brightness(1);
     }
 }
-@keyframes spawnRing{
-    0%{
-        opacity:1;
-        transform:scale(.52);
-    }
-    100%{
-        opacity:0;
-        transform:scale(1.18);
-    }
-}
-@keyframes spawnRingOuter{
-    0%{
-        opacity:.75;
-        transform:scale(.68);
-    }
-    100%{
-        opacity:0;
-        transform:scale(1.26);
-    }
-}
-@keyframes spawnGlow{
+@keyframes mergeRing{
     0%{
         opacity:.95;
-        transform:scale(.58);
+        transform:scale(.74);
     }
     100%{
         opacity:0;
-        transform:scale(1.18);
+        transform:scale(1.10);
     }
 }
-@keyframes mergePunch{
+@keyframes mergeGlow{
     0%{
-        transform:scale(1);
-        filter:brightness(1);
-    }
-    50%{
-        transform:scale(1.10);
-        filter:brightness(1.12);
+        opacity:.9;
+        transform:scale(.78);
     }
     100%{
-        transform:scale(1);
-        filter:brightness(1);
+        opacity:0;
+        transform:scale(1.08);
     }
 }
 .overlay{
@@ -620,7 +572,6 @@ body{
 .overlay-badge.is-hidden{
     visibility:hidden;
 }
-
 .overlay-buttons{
     display:flex;
     gap:10px;
@@ -643,9 +594,7 @@ body{
     transform:scale(.98);
 }
 @media (max-width:420px){
-    .title-banner{
-        border-radius:14px;
-    }
+    .title-banner{ border-radius:14px; }
     .banner-desc{
         font-size:12px;
         padding:9px 12px;
@@ -654,15 +603,9 @@ body{
         min-height:68px;
         border-radius:14px;
     }
-    .score-value{
-        font-size:22px;
-    }
-    #board{
-        border-radius:18px;
-    }
-    .overlay{
-        border-radius:18px;
-    }
+    .score-value{ font-size:22px; }
+    #board{ border-radius:18px; }
+    .overlay{ border-radius:18px; }
     .tile-num{
         right:5px;
         bottom:5px;
@@ -682,9 +625,7 @@ body{
         width:100%;
         max-width:260px;
     }
-    .overlay-stat-value{
-        font-size:18px;
-    }
+    .overlay-stat-value{ font-size:18px; }
     .overlay button{
         min-width:110px;
         font-size:15px;
@@ -696,7 +637,7 @@ body{
 
 <div id="app">
     <div class="version-note">
-        v2.5.9 수정 : 합체 순간 펀치감 강화 / 새 타일 등장 글로우 강화
+        v2.6.0 수정 : 합쳐진 결과 타일만 강조 / 랜덤 생성 타일 글로우 제거
     </div>
 
     <div id="loading-note" class="loading-note">이미지 로딩 중...</div>
@@ -771,10 +712,11 @@ body{
 
 <script>
 /*
-v2.5.9 수정점
-1) 합쳐질 때 렌더 후가 아니라 이동 애니메이션 말미에 바로 펀치감 적용
-2) 새 타일 등장 시 글로우 + 이중 링 + 더 큰 팝
-3) 기존 패배 엔딩/디버그 모드 유지
+v2.6.0 수정점
+1) 랜덤 생성 타일(lastSpawn) 강조 애니메이션 제거
+2) merge 결과로 처음 등장한 큰 숫자 타일에만 팝 + 글로우 적용
+3) 이동 중 source 타일 스케일 확대 제거 -> 상관없는 타일이 움찔하는 느낌 최소화
+4) 합체 연출은 "이동 -> 합쳐진 결과 타일 등장" 흐름으로 정리
 */
 
 const SIZE = 4;
@@ -1067,6 +1009,10 @@ function appendTileNumberBadge(el, value){
     el.appendChild(badge);
 }
 
+function isMergeCell(r, c){
+    return mergeCells.some(cell => cell.r === r && cell.c === c);
+}
+
 function renderBoard(){
     if(!cellWidth || !cellHeight) return;
 
@@ -1087,20 +1033,16 @@ function renderBoard(){
             tile.style.left = p.left + "px";
             tile.style.backgroundImage = `url('./images/img_${value}.jpg')`;
 
-            if(lastSpawn && lastSpawn.r === r && lastSpawn.c === c){
-                tile.classList.add("tile-new");
+            if(isMergeCell(r, c)){
+                tile.classList.add("tile-merged");
 
                 const glow = document.createElement("div");
-                glow.className = "tile-spawn-glow";
+                glow.className = "tile-merge-glow";
                 tile.appendChild(glow);
 
-                const ring1 = document.createElement("div");
-                ring1.className = "tile-spawn-ring";
-                tile.appendChild(ring1);
-
-                const ring2 = document.createElement("div");
-                ring2.className = "tile-spawn-ring ring-2";
-                tile.appendChild(ring2);
+                const ring = document.createElement("div");
+                ring.className = "tile-merge-ring";
+                tile.appendChild(ring);
             }
 
             appendTileNumberBadge(tile, value);
@@ -1189,13 +1131,15 @@ function slideAndMergeLineDetailed(line){
                 from: cur.from,
                 to: write,
                 value: cur.value,
-                merged: true
+                merged: true,
+                fadeLate: false
             });
             moves.push({
                 from: next.from,
                 to: write,
                 value: next.value,
-                merged: true
+                merged: true,
+                fadeLate: true
             });
 
             merges.push({
@@ -1211,7 +1155,8 @@ function slideAndMergeLineDetailed(line){
                 from: cur.from,
                 to: write,
                 value: cur.value,
-                merged: false
+                merged: false,
+                fadeLate: false
             });
             write++;
         }
@@ -1255,7 +1200,8 @@ function buildMoveResult(dir){
                     toR: r,
                     toC,
                     value: m.value,
-                    merged: m.merged
+                    merged: m.merged,
+                    fadeLate: m.fadeLate
                 });
             });
 
@@ -1288,7 +1234,8 @@ function buildMoveResult(dir){
                     toR,
                     toC: c,
                     value: m.value,
-                    merged: m.merged
+                    merged: m.merged,
+                    fadeLate: m.fadeLate
                 });
             });
 
@@ -1346,7 +1293,7 @@ function playMoveAnimation(animations, onDone){
             a.el.style.left = p.left + "px";
 
             if(a.merged){
-                a.el.style.opacity = "0.98";
+                a.el.style.filter = "brightness(1.04)";
             }
         });
     });
@@ -1354,25 +1301,16 @@ function playMoveAnimation(animations, onDone){
     setTimeout(() => {
         animTiles.forEach(a => {
             if(a.merged){
-                a.el.style.transform = "scale(1.18)";
-                a.el.style.filter = "brightness(1.14)";
+                a.el.style.opacity = a.fadeLate ? "0" : "0.18";
+                a.el.style.filter = "brightness(1.10)";
             }
         });
-    }, Math.max(MOVE_MS - 38, 60));
-
-    setTimeout(() => {
-        animTiles.forEach(a => {
-            if(a.merged){
-                a.el.style.transform = "scale(1)";
-                a.el.style.filter = "brightness(1)";
-            }
-        });
-    }, MOVE_MS + 8);
+    }, MOVE_MS - 18);
 
     setTimeout(() => {
         animLayer.innerHTML = "";
         onDone();
-    }, MOVE_MS + 28);
+    }, MOVE_MS + 16);
 }
 
 function move(dir){
@@ -1407,7 +1345,7 @@ function move(dir){
 
         setTimeout(() => {
             mergeCells = [];
-        }, 180);
+        }, 220);
 
         if(!wonShown && has2048Tile()){
             wonShown = true;
