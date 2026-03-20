@@ -616,6 +616,27 @@ body{
         inset 0 1px 0 rgba(255,255,255,.15),
         0 6px 12px rgba(38,28,70,.10);
 }
+.win-result-badge{
+    margin-top:2px;
+    margin-bottom:16px;
+    padding:10px 18px;
+    min-height:38px;
+    background:rgba(204,191,244,.42);
+    border:1px solid rgba(255,255,255,.20);
+    color:#fff;
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:.35px;
+    border-radius:999px;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.18),
+        0 8px 18px rgba(38,28,70,.14);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    backdrop-filter:blur(4px);
+}
 
 .overlay-buttons{
     display:flex;
@@ -679,6 +700,10 @@ body{
         min-width:110px;
         font-size:15px;
     }
+    .win-result-badge{
+        font-size:13px;
+        padding:9px 14px;
+    }
 }
 </style>
 </head>
@@ -724,24 +749,13 @@ body{
         <div id="winoverlay" class="overlay">
             <div id="win-img" class="overlay-img"></div>
             <div class="overlay-title">축하해요!</div>
-            <div class="overlay-msg" id="win-msg">2048 타일을 완성했어요 ✨</div>
-
-            <div class="overlay-stats overlay-stats-strong">
-                <div class="overlay-stat overlay-stat-strong">
-                    <span class="overlay-stat-label">이번 점수</span>
-                    <span class="overlay-stat-value" id="win-score-value">0</span>
-                </div>
-                <div class="overlay-stat overlay-stat-strong">
-                    <span class="overlay-stat-label">최고 타일</span>
-                    <span class="overlay-stat-value" id="win-max-value">2048</span>
-                </div>
-            </div>
+            <div id="win-result-badge" class="win-result-badge">2048 타일을 완성했어요 ✨</div>
 
             <div id="win-tile-label" class="overlay-sub"></div>
 
             <div class="overlay-buttons">
                 <button onclick="restart()">REPLAY</button>
-                <button onclick="copyResult('win')">결과 복사</button>
+                <button onclick="copyResult('win')">공유</button>
             </div>
         </div>
 
@@ -755,7 +769,7 @@ body{
 
             <div class="overlay-buttons">
                 <button onclick="restart()">REPLAY</button>
-                <button onclick="copyResult('gameover')">결과 복사</button>
+                <button onclick="copyResult('gameover')">공유</button>
             </div>
         </div>
     </div>
@@ -817,11 +831,9 @@ const gameOverOverlay = document.getElementById("gameover");
 const winImg = document.getElementById("win-img");
 const gameOverImg = document.getElementById("gameover-img");
 const winTileLabel = document.getElementById("win-tile-label");
+const winResultBadge = document.getElementById("win-result-badge");
 const gameOverTileBadge = document.getElementById("gameover-tile-badge");
-const winMsg = document.getElementById("win-msg");
 const gameOverMsg = document.getElementById("gameover-msg");
-const winScoreValue = document.getElementById("win-score-value");
-const winMaxValue = document.getElementById("win-max-value");
 const gameOverBadge = document.getElementById("gameover-badge");
 const scoreCardEl = document.getElementById("score-card");
 const bestCardEl = document.getElementById("best-card");
@@ -918,12 +930,9 @@ function getGameOverBadgeText(max){
 }
 
 function showWin(){
-    const max = Math.max(getMaxTile(), 2048);
     winImg.style.backgroundImage = "url('./images/img_2048.jpg')";
-    winMsg.textContent = "2048 타일을 완성했어요 ✨";
+    winResultBadge.textContent = "2048 타일을 완성했어요 ✨";
     winTileLabel.textContent = "";
-    winScoreValue.textContent = score;
-    winMaxValue.textContent = max;
     winOverlay.style.display = "flex";
 }
 
@@ -933,7 +942,7 @@ function showGameOver(){
 
     gameOverImg.style.backgroundImage = `url('./images/img_${safeImgValue}.jpg')`;
     gameOverMsg.textContent = getGameOverMessageByMax(max);
-    setBadge(gameOverTileBadge, `${max} 타일 완성!`);
+    setBadge(gameOverTileBadge, `${max} 타일을 완성했어요!`);
     setBadge(gameOverBadge, getGameOverBadgeText(max));
     gameOverOverlay.style.display = "flex";
 }
@@ -1410,9 +1419,7 @@ async function copyText(text){
 }
 
 function buildResultText(mode){
-    const max = getMaxTile() || 2;
-    const headline = mode === "win" ? "2048 완성!" : "2048 결과";
-    return `${headline}\n이번 점수: ${score}\n최고 타일: ${max}\n최고기록: ${best}`;
+    return "https://anykey0923.github.io/KEY2048/v1/";
 }
 
 function copyResult(mode){
