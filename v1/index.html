@@ -31,10 +31,17 @@
     --tile-radius:8px;
 }
 *{ box-sizing:border-box; }
+
 html, body{
     margin:0;
     min-height:100%;
 }
+
+html{
+    overflow-x:hidden;
+    overflow-y:auto;
+}
+
 body{
     background:
         radial-gradient(circle at top, #fdfcff 0%, var(--bg1) 38%, var(--bg2) 100%);
@@ -42,12 +49,15 @@ body{
     display:flex;
     flex-direction:column;
     align-items:center;
-    justify-content:center;
+    justify-content:flex-start;
     min-height:100vh;
-    padding:18px 0;
+    padding:18px 0 24px;
     color:var(--text);
-    overflow:hidden;
+    overflow-x:hidden;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
 }
+
 #app{
     width:var(--board-size);
     display:flex;
@@ -58,13 +68,16 @@ body{
     -webkit-user-select:none;
     user-select:none;
     -webkit-tap-highlight-color:transparent;
+    flex:0 0 auto;
 }
+
 .version-note{
     font-size:12px;
     color:#8a82a6;
     margin-bottom:8px;
     text-align:center;
 }
+
 .loading-note{
     display:none;
     margin-bottom:10px;
@@ -151,12 +164,32 @@ body{
     background-size:cover;
     background-position:center;
     background-repeat:no-repeat;
+    border:none;
     border-radius:16px;
     margin-bottom:10px;
     box-shadow:
         0 12px 22px rgba(70,60,120,.12),
         inset 0 1px 0 rgba(255,255,255,.22);
+    cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+    appearance:none;
+    -webkit-appearance:none;
 }
+.title-banner:hover{
+    filter:brightness(1.02);
+}
+.title-banner:active{
+    transform:scale(.992);
+}
+.title-banner:focus-visible{
+    outline:none;
+    box-shadow:
+        0 0 0 3px rgba(255,255,255,.72),
+        0 0 0 6px rgba(126,102,191,.28),
+        0 12px 22px rgba(70,60,120,.12),
+        inset 0 1px 0 rgba(255,255,255,.22);
+}
+
 .banner-desc{
     width:100%;
     margin-bottom:14px;
@@ -172,6 +205,7 @@ body{
     color:#807a95;
     text-align:center;
 }
+
 .top-panel{
     width:100%;
     display:flex;
@@ -180,6 +214,7 @@ body{
     gap:12px;
     margin-bottom:14px;
 }
+
 .score-card{
     flex:1;
     position:relative;
@@ -288,27 +323,7 @@ body{
         transform:translateY(-10px) scale(1);
     }
 }
-.controls{
-    display:flex;
-    justify-content:flex-end;
-    margin:-2px 0 12px;
-}
-.ghost-btn{
-    border:none;
-    border-radius:12px;
-    padding:10px 14px;
-    font-size:13px;
-    font-weight:700;
-    color:#6c628e;
-    background:rgba(255,255,255,.68);
-    box-shadow:
-        0 6px 14px rgba(70,60,120,.06),
-        inset 0 1px 0 rgba(255,255,255,.7);
-    cursor:pointer;
-}
-.ghost-btn:active{
-    transform:scale(.98);
-}
+
 #board{
     position:relative;
     width:100%;
@@ -593,7 +608,11 @@ body{
 .overlay button:active{
     transform:scale(.98);
 }
+
 @media (max-width:420px){
+    body{
+        padding:14px 0 20px;
+    }
     .title-banner{ border-radius:14px; }
     .banner-desc{
         font-size:12px;
@@ -637,14 +656,20 @@ body{
 
 <div id="app">
     <div class="version-note">
-        v2.6.0 수정 : 합쳐진 결과 타일만 강조 / 랜덤 생성 타일 글로우 제거
+        v2.6.1 수정 : 새 게임 버튼 제거 / 타이틀 배너 탭으로 새 게임 / 화면 넘침 시 스크롤 허용
     </div>
 
     <div id="loading-note" class="loading-note">이미지 로딩 중...</div>
     <div id="debug-indicator" class="debug-indicator">DEBUG MODE ON · Shift+W 승리 / Shift+G 게임오버</div>
     <div id="milestone-wrap" class="milestone-wrap"></div>
 
-    <div class="title-banner"></div>
+    <button
+        class="title-banner"
+        id="title-banner"
+        type="button"
+        aria-label="새 게임 시작"
+        title="눌러서 새 게임 시작"
+    ></button>
 
     <div class="banner-desc">
         상하좌우로 밀어 같은 숫자를 합쳐 2048을 만들어보세요!
@@ -659,10 +684,6 @@ body{
             <div class="score-label">최고기록</div>
             <div class="score-value" id="best">0</div>
         </div>
-    </div>
-
-    <div class="controls">
-        <button class="ghost-btn" onclick="restart()">새 게임</button>
     </div>
 
     <div id="board">
@@ -712,11 +733,10 @@ body{
 
 <script>
 /*
-v2.6.0 수정점
-1) 랜덤 생성 타일(lastSpawn) 강조 애니메이션 제거
-2) merge 결과로 처음 등장한 큰 숫자 타일에만 팝 + 글로우 적용
-3) 이동 중 source 타일 스케일 확대 제거 -> 상관없는 타일이 움찔하는 느낌 최소화
-4) 합체 연출은 "이동 -> 합쳐진 결과 타일 등장" 흐름으로 정리
+v2.6.1 수정점
+1) 하단/중간의 "새 게임" 버튼 제거
+2) 상단 타이틀 배너 클릭 시 restart() 실행
+3) 일부 휴대폰에서 화면이 세로로 넘칠 경우 body/html에 세로 스크롤 허용
 */
 
 const SIZE = 4;
@@ -783,6 +803,7 @@ const winBadge = document.getElementById("win-badge");
 const gameOverBadge = document.getElementById("gameover-badge");
 const scoreCardEl = document.getElementById("score-card");
 const bestCardEl = document.getElementById("best-card");
+const titleBannerEl = document.getElementById("title-banner");
 
 bestEl.innerText = String(best);
 
@@ -1481,6 +1502,10 @@ boardEl.addEventListener("touchend", e => {
 boardEl.addEventListener("touchcancel", () => {
     trackingTouch = false;
 }, { passive:true });
+
+titleBannerEl.addEventListener("click", () => {
+    restart();
+});
 
 document.addEventListener("gesturestart", e => {
     e.preventDefault();
