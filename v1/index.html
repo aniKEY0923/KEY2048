@@ -400,15 +400,15 @@ body{
 }
 .anim-tile{
     transition:
-        top .18s cubic-bezier(.22,.61,.36,1),
-        left .18s cubic-bezier(.22,.61,.36,1),
-        opacity .18s ease,
-        filter .18s ease;
+        top .21s cubic-bezier(.22,.61,.36,1),
+        left .21s cubic-bezier(.22,.61,.36,1),
+        opacity .21s ease,
+        filter .21s ease;
     z-index:20;
     will-change:top, left, opacity, filter;
 }
 .tile-merged{
-    animation:mergeResultPop .22s ease-out;
+    animation:mergeResultPop .24s ease-out;
     will-change:transform, filter;
     z-index:8;
 }
@@ -423,7 +423,7 @@ body{
         0 0 26px rgba(255,255,255,.24);
     opacity:0;
     pointer-events:none;
-    animation:mergeRing .32s ease-out forwards;
+    animation:mergeRing .34s ease-out forwards;
 }
 .tile-merge-glow{
     position:absolute;
@@ -433,7 +433,7 @@ body{
         radial-gradient(circle, rgba(255,255,255,.38) 0%, rgba(255,255,255,.14) 36%, rgba(255,255,255,0) 72%);
     opacity:0;
     pointer-events:none;
-    animation:mergeGlow .28s ease-out forwards;
+    animation:mergeGlow .30s ease-out forwards;
     mix-blend-mode:screen;
 }
 .tile-num{
@@ -656,7 +656,7 @@ body{
 
 <div id="app">
     <div class="version-note">
-        v2.6.5 수정 : 기존 구조 유지 + 이동 애니메이션 180ms로 조정
+        v2.6.6 수정 : PC용 슬라이드 210ms / 2048 엔딩 레이아웃 조정
     </div>
 
     <div id="loading-note" class="loading-note">이미지 로딩 중...</div>
@@ -695,7 +695,8 @@ body{
             <div id="win-img" class="overlay-img"></div>
             <div class="overlay-title">축하해요!</div>
             <div class="overlay-msg" id="win-msg">2048 타일을 완성했어요 ✨</div>
-            <div id="win-tile-label" class="overlay-sub"></div>
+
+            <div id="win-badge" class="overlay-badge is-hidden"></div>
 
             <div class="overlay-stats">
                 <div class="overlay-stat">
@@ -708,7 +709,7 @@ body{
                 </div>
             </div>
 
-            <div id="win-badge" class="overlay-badge is-hidden"></div>
+            <div id="win-tile-label" class="overlay-sub"></div>
 
             <div class="overlay-buttons">
                 <button onclick="restart()">REPLAY</button>
@@ -732,16 +733,9 @@ body{
 </div>
 
 <script>
-/*
-v2.6.5 수정점
-1) 기존 v2.6.4 구조/기능 유지
-2) 타일 이동 애니메이션 시간 140ms -> 180ms
-3) Android 계열에서도 이동감이 더 보이도록 easing 조정
-*/
-
 const SIZE = 4;
 const GAP = 10;
-const MOVE_MS = 180;
+const MOVE_MS = 210;
 
 const PRELOAD_IMAGES = [
     "./images/img_title.jpg",
@@ -906,7 +900,7 @@ function showWin(){
     const max = Math.max(getMaxTile(), 2048);
     winImg.style.backgroundImage = "url('./images/img_2048.jpg')";
     winMsg.textContent = "2048 타일을 완성했어요 ✨";
-    winTileLabel.textContent = `최고 타일 ${max}`;
+    winTileLabel.textContent = "";
     winScoreValue.textContent = score;
     winMaxValue.textContent = max;
     setBadge(winBadge, getWinBadgeText(max));
@@ -1326,12 +1320,12 @@ function playMoveAnimation(animations, onDone){
                 a.el.style.filter = "brightness(1.10)";
             }
         });
-    }, MOVE_MS - 22);
+    }, MOVE_MS - 24);
 
     setTimeout(() => {
         animLayer.innerHTML = "";
         onDone();
-    }, MOVE_MS + 18);
+    }, MOVE_MS + 20);
 }
 
 function move(dir){
@@ -1367,7 +1361,7 @@ function move(dir){
         setTimeout(() => {
             mergeCells = [];
             renderBoard();
-        }, 240);
+        }, 260);
 
         if(!wonShown && has2048Tile()){
             wonShown = true;
