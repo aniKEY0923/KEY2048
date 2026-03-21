@@ -551,10 +551,10 @@ body{
     width:calc(14px * var(--scale, 1));
     height:calc(14px * var(--scale, 1));
     transform:translate(-50%, -50%);
-    opacity:.22;
+    opacity:.38;
     filter:
-        drop-shadow(0 0 3px rgba(255,238,190,.18))
-        drop-shadow(0 0 7px rgba(255,216,120,.10));
+        drop-shadow(0 0 4px rgba(255,242,205,.26))
+        drop-shadow(0 0 9px rgba(255,220,130,.16));
     animation:
         starBlink var(--blinkDur, 2.8s) ease-in-out infinite,
         starFloat var(--floatDur, 4.6s) ease-in-out infinite;
@@ -587,10 +587,10 @@ body{
 
 .gold-star.sm{
     --scale:.5;
-    opacity:.18;
+    opacity:.30;
     filter:
-        drop-shadow(0 0 2px rgba(255,238,190,.14))
-        drop-shadow(0 0 5px rgba(255,216,120,.08));
+        drop-shadow(0 0 3px rgba(255,238,190,.20))
+        drop-shadow(0 0 6px rgba(255,216,120,.12));
 }
 
 .gold-orbit{
@@ -603,17 +603,17 @@ body{
 }
 .gold-comet{
     position:absolute;
-    width:18px;
-    height:18px;
+    width:9px;
+    height:9px;
     transform:translate(-50%, -50%);
     pointer-events:none;
-    opacity:.56;
+    opacity:.86;
     filter:
-        blur(.2px)
-        drop-shadow(0 0 4px rgba(255,245,210,.34))
-        drop-shadow(0 0 10px rgba(255,220,130,.20))
-        drop-shadow(0 0 18px rgba(255,196,70,.12));
-    animation:rectOrbit 6.4s linear infinite;
+        blur(.12px)
+        drop-shadow(0 0 4px rgba(255,248,225,.42))
+        drop-shadow(0 0 9px rgba(255,225,135,.24))
+        drop-shadow(0 0 14px rgba(255,196,70,.14));
+    animation:rectOrbit 12.8s linear infinite;
 }
 .gold-comet::before{
     content:"";
@@ -622,34 +622,34 @@ body{
     border-radius:50%;
     background:
         radial-gradient(circle,
-            rgba(255,255,255,.92) 0%,
-            rgba(255,244,210,.74) 26%,
-            rgba(255,224,150,.38) 56%,
-            rgba(255,210,110,.12) 76%,
+            rgba(255,255,255,1) 0%,
+            rgba(255,248,225,.96) 30%,
+            rgba(255,228,155,.56) 62%,
+            rgba(255,210,110,.16) 82%,
             rgba(255,210,110,0) 100%);
 }
 .gold-comet::after{
     content:"";
     position:absolute;
-    inset:-5px;
+    inset:-4px;
     border-radius:50%;
     background:
         radial-gradient(circle,
-            rgba(255,235,170,.18) 0%,
-            rgba(255,220,130,.10) 45%,
+            rgba(255,235,170,.24) 0%,
+            rgba(255,220,130,.14) 45%,
             rgba(255,210,110,0) 100%);
-    filter:blur(3px);
+    filter:blur(2.2px);
 }
 .gold-comet:nth-child(1){
     animation-delay:0s;
 }
 .gold-comet:nth-child(2){
-    animation-delay:-2.13s;
-    opacity:.42;
+    animation-delay:-4.26s;
+    opacity:.72;
 }
 .gold-comet:nth-child(3){
-    animation-delay:-4.26s;
-    opacity:.34;
+    animation-delay:-8.52s;
+    opacity:.60;
 }
 
 @keyframes rectOrbit{
@@ -692,11 +692,11 @@ body{
 }
 
 @keyframes starBlink{
-    0%, 100%{ opacity:.10; }
-    20%{ opacity:.18; }
-    45%{ opacity:.42; }
-    60%{ opacity:.20; }
-    82%{ opacity:.34; }
+    0%, 100%{ opacity:.18; }
+    20%{ opacity:.30; }
+    45%{ opacity:.68; }
+    60%{ opacity:.34; }
+    82%{ opacity:.54; }
 }
 
 @keyframes starFloat{
@@ -773,7 +773,17 @@ body{
 }
 
 .gameover-tight{
-    margin-bottom:0;
+    margin:2px 0 8px;
+    padding:0;
+    min-height:auto;
+    background:none;
+    box-shadow:none;
+    border:none;
+    border-radius:0;
+    font-size:24px;
+    font-weight:900;
+    letter-spacing:.1px;
+    line-height:1.18;
 }
 .gameover-replay{
     margin-top:0;
@@ -784,23 +794,19 @@ body{
 .win-result-badge{
     margin-top:2px;
     margin-bottom:16px;
-    padding:10px 18px;
-    min-height:38px;
-    background:rgba(204,191,244,.42);
-    border:1px solid rgba(255,255,255,.20);
+    padding:0;
+    min-height:auto;
+    background:none;
+    border:none;
     color:#fff;
-    font-size:14px;
-    font-weight:800;
-    letter-spacing:.35px;
-    border-radius:999px;
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.18),
-        0 8px 18px rgba(38,28,70,.14);
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    font-size:24px;
+    font-weight:900;
+    letter-spacing:.1px;
+    line-height:1.18;
+    display:block;
     text-align:center;
-    backdrop-filter:blur(4px);
+    box-shadow:none;
+    backdrop-filter:none;
 }
 
 .overlay-buttons{
@@ -935,7 +941,7 @@ body{
                 </div>
             </div>
             <div class="overlay-title">축하해요!</div>
-            <div id="win-result-badge" class="win-result-badge">2048 타일을 완성했어요 ✨</div>
+            <div id="win-result-badge" class="win-result-badge">2048 타일을 완성했어요!</div>
             <div id="win-tile-label" class="overlay-sub"></div>
 
             <div class="overlay-buttons">
@@ -971,8 +977,8 @@ body{
                     <span class="gold-comet"></span>
                 </div>
             </div>
-            <div id="gameover-msg" class="overlay-msg">거의 다 왔어요. 다음 번엔 2048까지!</div>
             <div id="gameover-tile-badge" class="overlay-badge tile-result-badge gameover-tight is-hidden"></div>
+            <div id="gameover-msg" class="overlay-msg">거의 다 왔어요. 다음 번엔 2048까지!</div>
             <div id="gameover-badge" class="overlay-badge gameover-extra-note is-hidden"></div>
 
             <div class="overlay-buttons gameover-replay">
@@ -1138,7 +1144,7 @@ function getGameOverBadgeText(max){
 
 function showWin(){
     winImg.style.backgroundImage = "url('./images/img_2048.jpg')";
-    winResultBadge.textContent = "2048 타일을 완성했어요 ✨";
+    winResultBadge.textContent = "2048 타일을 완성했어요!";
     winTileLabel.textContent = "";
     winOverlay.style.display = "flex";
 }
