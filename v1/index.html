@@ -80,7 +80,7 @@ body{
 
 .loading-note{
     display:none;
-    margin-bottom:10px;
+    margin-bottom:14px;
     padding:10px 12px;
     border-radius:12px;
     background:rgba(255,255,255,.66);
@@ -836,17 +836,41 @@ body{
 .overlay button{
     padding:12px 20px;
     font-size:16px;
-    font-weight:bold;
+    font-weight:800;
     border:none;
-    border-radius:10px;
+    border-radius:12px;
     cursor:pointer;
-    background:#f7f8ff;
-    color:#676f95;
-    box-shadow:0 6px 14px rgba(74,60,112,.14);
+    background:linear-gradient(180deg, var(--panel1) 0%, var(--panel2) 100%);
+    color:#ffffff;
+    box-shadow:
+        0 8px 18px rgba(88,98,160,.22),
+        inset 0 1px 0 rgba(255,255,255,.24);
+    text-shadow:0 1px 1px rgba(84,68,146,.18);
     min-width:120px;
+    animation:ctaBob 1.9s ease-in-out infinite;
+    will-change:transform;
 }
 .overlay button:active{
-    transform:scale(.98);
+    transform:scale(.97);
+    animation-play-state:paused;
+}
+
+@keyframes ctaBob{
+    0%, 100%{
+        transform:translateY(0) scale(1);
+    }
+    18%{
+        transform:translateY(-2px) scale(1.018);
+    }
+    34%{
+        transform:translateY(0) scale(.995);
+    }
+    52%{
+        transform:translateY(-4px) scale(1.03);
+    }
+    68%{
+        transform:translateY(0) scale(.998);
+    }
 }
 
 @media (max-width:420px){
@@ -901,7 +925,7 @@ body{
 
 <div id="app">
     <div class="version-note">
-        v2.7.0 수정 : 엔딩 별 파티클 점멸 분산 + 작은 파티클 8개 + 버튼/간격 정리
+        v2.7.3 수정 : 엔딩 CTA 버튼 연보라 스타일 + 흰 글자 + 디용디용 애니메이션 + 성공 엔딩 간격 미세 조정
     </div>
 
     <div id="loading-note" class="loading-note">이미지 로딩 중...</div>
