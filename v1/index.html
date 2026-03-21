@@ -400,12 +400,13 @@ body{
 }
 .anim-tile{
     transition:
-        top .21s cubic-bezier(.22,.61,.36,1),
-        left .21s cubic-bezier(.22,.61,.36,1),
-        opacity .21s ease,
-        filter .21s ease;
+        transform var(--moveDur, .26s) cubic-bezier(.22,.61,.36,1),
+        opacity .18s ease,
+        filter .18s ease;
+    transform:translate3d(0,0,0);
     z-index:20;
-    will-change:top, left, opacity, filter;
+    will-change:transform, opacity, filter;
+    backface-visibility:hidden;
 }
 .tile-merged{
     animation:mergeResultPop .24s ease-out;
@@ -1031,7 +1032,9 @@ body{
 <script>
 const SIZE = 4;
 const GAP = 10;
-const MOVE_MS = 210;
+const MOVE_MS = 240;
+const MOVE_MS_STEP = 28;
+const MOVE_MS_MAX = 296;
 
 const PRELOAD_IMAGES = [
     "./images/img_title.jpg",
@@ -1552,6 +1555,11 @@ function buildMoveResult(dir){
     };
 }
 
+function getMoveDuration(fromR, fromC, toR, toC){
+    const steps = Math.max(Math.abs(toR - fromR), Math.abs(toC - fromC));
+    return Math.min(MOVE_MS_MAX, MOVE_MS + Math.max(0, steps - 1) * MOVE_MS_STEP);
+}
+
 function createAnimTile(value, r, c){
     const el = document.createElement("div");
     el.className = "anim-tile";
@@ -1562,6 +1570,7 @@ function createAnimTile(value, r, c){
     el.style.top = p.top + "px";
     el.style.left = p.left + "px";
     el.style.backgroundImage = `url('./images/img_${value}.jpg')`;
+    el.style.transform = "translate3d(0,0,0)";
 
     appendTileNumberBadge(el, value);
     animLayer.appendChild(el);
@@ -1578,36 +1587,43 @@ function playMoveAnimation(animations, onDone){
 
     const animTiles = animations.map(a => {
         const el = createAnimTile(a.value, a.fromR, a.fromC);
-        return { el, ...a };
+        const duration = getMoveDuration(a.fromR, a.fromC, a.toR, a.toC);
+        el.style.setProperty("--moveDur", duration + "ms");
+        return { el, duration, ...a };
     });
 
+    const maxDuration = Math.max(...animTiles.map(a => a.duration));
     tilesEl.style.visibility = "hidden";
 
     requestAnimationFrame(() => {
-        animTiles.forEach(a => {
-            const p = pos(a.toR, a.toC);
-            a.el.style.top = p.top + "px";
-            a.el.style.left = p.left + "px";
+        requestAnimationFrame(() => {
+            animTiles.forEach(a => {
+                const from = pos(a.fromR, a.fromC);
+                const to = pos(a.toR, a.toC);
+                const dx = to.left - from.left;
+                const dy = to.top - from.top;
+                a.el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
 
-            if(a.merged){
-                a.el.style.filter = "brightness(1.04)";
-            }
+                if(a.merged){
+                    a.el.style.filter = "brightness(1.04)";
+                }
+            });
         });
     });
 
-    setTimeout(() => {
-        animTiles.forEach(a => {
-            if(a.merged){
+    animTiles.forEach(a => {
+        if(a.merged){
+            setTimeout(() => {
                 a.el.style.opacity = a.fadeLate ? "0" : "0.18";
                 a.el.style.filter = "brightness(1.10)";
-            }
-        });
-    }, MOVE_MS - 24);
+            }, Math.max(80, a.duration - 26));
+        }
+    });
 
     setTimeout(() => {
         animLayer.innerHTML = "";
         onDone();
-    }, MOVE_MS + 20);
+    }, maxDuration + 28);
 }
 
 function move(dir){
