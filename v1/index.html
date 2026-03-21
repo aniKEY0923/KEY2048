@@ -714,25 +714,43 @@ body{
     }
 }
 
+.overlay-pretitle{
+    margin:0 0 4px;
+    font-size:16px;
+    line-height:1.35;
+    font-weight:500;
+    letter-spacing:.1px;
+    color:rgba(255,255,255,.88);
+    text-align:center;
+}
 .overlay-title{
-    margin-bottom:10px;
-    font-size:22px;
-    font-weight:bold;
-    letter-spacing:.6px;
+    margin:0 0 8px;
+    font-size:24px;
+    line-height:1.28;
+    font-weight:800;
+    letter-spacing:-.3px;
+    color:#fff;
+    text-align:center;
 }
 .overlay-msg{
     margin:0 0 14px;
-    font-size:14px;
-    line-height:1.45;
+    font-size:16px;
+    line-height:1.35;
+    font-weight:500;
+    letter-spacing:.1px;
     color:rgba(255,255,255,.88);
     text-align:center;
     padding:0 20px;
 }
 .overlay-sub{
-    margin:-2px 0 14px;
+    margin:0;
     font-size:14px;
+    line-height:1.45;
+    font-weight:500;
     color:rgba(255,255,255,.92);
-    letter-spacing:.2px;
+    letter-spacing:0;
+    text-align:center;
+    opacity:.96;
 }
 
 .overlay-badge{
@@ -773,7 +791,7 @@ body{
 }
 
 .gameover-tight{
-    margin:2px 0 8px;
+    margin:0 0 4px;
     padding:0;
     min-height:auto;
     background:none;
@@ -792,8 +810,8 @@ body{
     display:none !important;
 }
 .win-result-badge{
-    margin-top:2px;
-    margin-bottom:16px;
+    margin-top:0;
+    margin-bottom:10px;
     padding:0;
     min-height:auto;
     background:none;
@@ -854,9 +872,15 @@ body{
         padding:2px 5px;
         font-size:10px;
     }
+    .overlay-pretitle{
+        font-size:15px;
+    }
     .overlay-msg,
     .overlay-sub{
         font-size:13px;
+    }
+    .overlay-title{
+        font-size:22px;
     }
     .milestone{
         font-size:13px;
@@ -867,8 +891,8 @@ body{
         font-size:15px;
     }
     .win-result-badge{
-        font-size:13px;
-        padding:9px 14px;
+        font-size:22px;
+        padding:0;
     }
 }
 </style>
@@ -940,7 +964,7 @@ body{
                     <span class="gold-comet"></span>
                 </div>
             </div>
-            <div class="overlay-sub">축하해요!</div>
+            <div class="overlay-pretitle">축하해요!</div>
             <div id="win-result-badge" class="win-result-badge">2048 타일을 완성했어요!</div>
             <div id="win-tile-label" class="overlay-sub"></div>
 
